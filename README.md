@@ -3,6 +3,173 @@
 ## Overview
 A SaaS platform for real estate developers/builders to deploy a customizable AI conversational agent (powered by ElevenLabs) on their websites. The agent answers user queries, qualifies leads, collects lead information, and supports advanced analytics, CRM, and integrations.
 
+This platform combines:
+
+1. Next.js frontend with a modern UI using Tailwind CSS and Shadcn UI
+2. Supabase for authentication, database, storage, and edge functions
+3. ElevenLabs API integration for voice generation and conversational AI
+4. Embeddable widget for easy deployment on customer websites
+
+## Features
+
+### For Real Estate Developers (Platform Users)
+
+- **AI Agent Management**: Create and customize AI agents with specific knowledge and personality
+- **Widget Customization**: Configure the appearance and behavior of the chat widget
+- **Project Management**: Organize properties and agents by project
+- **Document Management**: Upload property documents for agent knowledge base
+- **Lead Management**: View and manage leads generated through conversations
+- **CRM Integration**: Basic CRM functionality with lead status tracking
+- **Analytics**: Track conversation metrics and lead quality
+
+### For End Users (Website Visitors)
+
+- **Conversational Interface**: Chat with AI agent about properties
+- **Voice Interaction**: Optional voice-based conversation
+- **Property Information**: Get detailed information about available properties
+- **Appointment Scheduling**: Book viewings directly through the chat
+- **Contact Information**: Leave contact details to be contacted by human agents
+
+## Architecture
+
+The project is structured as follows:
+
+```
+/
+├── frontend/                # Next.js frontend application
+│   ├── app/                 # Next.js App Router
+│   ├── components/          # Reusable UI components
+│   ├── hooks/               # Custom React hooks
+│   ├── lib/                 # Utility functions and API client
+│   └── ...                  # Other frontend resources
+├── backend/                 # Backend resources
+│   ├── supabase/            # Supabase configuration
+│   │   ├── functions/       # Edge Functions
+│   │   └── db-migrations/   # Database migration scripts
+│   └── lib/                 # Shared backend libraries
+└── public/                  # Static assets
+```
+
+## Tech Stack
+
+- **Frontend**: Next.js, React, Tailwind CSS, Shadcn UI
+- **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions)
+- **AI/Voice**: ElevenLabs API
+- **Deployment**: Vercel (frontend), Supabase (backend)
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ and npm
+- Supabase account
+- ElevenLabs API key
+
+### Frontend Setup
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/real-estate-ai-saas.git
+cd real-estate-ai-saas
+```
+
+2. Install dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+3. Create a `.env.local` file in the frontend directory with your configuration:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+4. Start the development server:
+
+```bash
+npm run dev
+```
+
+### Backend Setup
+
+1. Set up your Supabase project:
+   - Create a new project in Supabase
+   - Set up the database tables using the migration scripts in `backend/supabase/db-migrations/`
+   - Enable the authentication services
+   - Create storage buckets for documents and recordings
+
+2. Deploy Edge Functions:
+   - Deploy the Edge Functions using the Supabase CLI or use the already configured functions in the Supabase project
+   - Set environment variables for Edge Functions in Supabase dashboard
+
+3. Configure environment variables for Edge Functions:
+   
+```
+ELEVENLABS_API_KEY=your-elevenlabs-api-key
+WIDGET_JS_URL=your-widget-js-url
+```
+
+## Widget Integration
+
+To integrate the AI chat widget on a website:
+
+1. From the dashboard, create a new widget and customize it
+2. Copy the generated embed code
+3. Paste the code into the HTML of your website before the closing `</body>` tag
+
+Example embed code:
+
+```html
+<div id="realvoice-widget" 
+  data-widget-id="widget-id"
+  data-agent-id="agent-id"
+  data-agent-name="AI Assistant"
+  data-theme-primary="#4f46e5"
+  data-theme-text="#ffffff"
+  data-theme-bg="#ffffff"
+  data-position="bottom-right"
+  data-initial-message="Hello! How can I help you today?"
+></div>
+<script src="https://your-domain.com/widget.js"></script>
+```
+
+## Development
+
+### Database Schema
+
+The database includes the following key tables:
+
+- `profiles`: User profiles linked to Supabase Auth
+- `organizations`: Multi-tenant organizations for team management
+- `projects`: Real estate projects/properties
+- `agents`: AI agent configurations
+- `documents`: Property documents and resources
+- `document_chunks`: Vectorized chunks of documents for AI context
+- `conversations`: Conversation history with visitors
+- `leads`: Lead information collected from conversations
+- `widgets`: Widget configurations for embedding
+
+### Edge Functions
+
+- `converse`: Handles conversation API between frontend and ElevenLabs
+- `document`: Manages document uploading and processing
+- `widget`: Generates widget embed code and handles widget data
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgements
+
+- Shadcn UI for the component library
+- ElevenLabs for the AI voice technology
+- Supabase for the backend infrastructure
+
 ---
 
 ## Product Vision
@@ -16,65 +183,6 @@ A SaaS platform for real estate developers/builders to deploy a customizable AI 
   - CRM and WhatsApp integration (Pro+)
   - Multi-organization, multi-user roles
   - Per-agent billing plans
-
----
-
-## Architecture
-- **Frontend:** Next.js (React, TypeScript)
-- **Backend:** Supabase (Postgres, Auth, Storage, Edge Functions)
-- **AI Integration:** ElevenLabs Conversational API
-- **Widget:** Embeddable JS widget (iframe or floating component)
-
----
-
-## Core Features & Data Model
-### Authentication & User Management
-- Supabase Auth for email/password login
-- Organizations (multi-tenancy)
-- User roles: Admin, Manager, Agent/User
-
-### Agent & Project Management
-- Projects: Real estate developments/properties
-- Agents: AI conversational agents linked to projects
-- **Agent Customization:**
-  - Modular, block-based flow editor ("Conversational Modules")
-  - Each module: type, script, response type, branching, data capture
-  - Users drag, drop, reorder, and customize modules to define agent flow
-
-#### Example Modules
-- Greeting
-- Intent Detection
-- Ask Budget
-- Ask Location Preference
-- Answer FAQ
-- Collect Contact Info
-- End Conversation
-
-#### Example Module JSON
-```json
-[
-  { "id": "greeting", "type": "message", "script": "Hi! I'm the virtual assistant for [Project Name]. How can I help you today?" },
-  { "id": "intent", "type": "action", "script": "Are you looking for property details, want to schedule a visit, or have another question?", "responseType": "choice", "choices": ["Property Details", "Schedule Visit", "Other"], "branches": { "Property Details": "ask_budget", "Schedule Visit": "collect_contact", "Other": "answer_faq" } },
-  { "id": "ask_budget", "type": "question", "script": "What is your budget range for a new home?", "responseType": "number" },
-  { "id": "collect_contact", "type": "question", "script": "May I have your name and phone number so our team can follow up?", "responseType": "contact" },
-  { "id": "end", "type": "message", "script": "Thank you for your time! We'll be in touch soon." }
-]
-```
-
-### Lead & Conversation Management
-- Store all captured lead info (name, contact, requirements, qualification status)
-- Store conversation transcripts, metadata, and analytics
-
-### Analytics
-- Track all analytics visible in the frontend (conversations, leads, agent performance, etc.)
-
-### Billing
-- Per-agent billing plans:
-  - **Basic:** ₹35,000/month (1 agent, 1 project, no CRM)
-  - **Pro:** ₹60,000/month (multi-project, CRM, WhatsApp follow-up)
-  - **Premium:** ₹1L+/month (custom voice model, analytics, integrations)
-- Store plan/subscription per organization
-- Enforce plan limits in backend logic
 
 ---
 
