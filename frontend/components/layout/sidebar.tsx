@@ -162,12 +162,12 @@ function Sidebar({ isCollapsed, isOpen, onToggle, onClose }: SidebarProps) {
           <div className={cn("flex items-center gap-3", isCollapsed && "flex-col")}>
             <Avatar className="h-9 w-9">
               <AvatarImage src="/placeholder.svg?height=36&width=36" alt="User" />
-              <AvatarFallback>JD</AvatarFallback>
+              <AvatarFallback>U</AvatarFallback>
             </Avatar>
             {!isCollapsed && (
               <div className="flex flex-col">
-                <span className="text-sm font-medium">John Doe</span>
-                <span className="text-xs text-muted-foreground">john@example.com</span>
+                <span className="text-sm font-medium">User</span>
+                <span className="text-xs text-muted-foreground">user@example.com</span>
               </div>
             )}
           </div>

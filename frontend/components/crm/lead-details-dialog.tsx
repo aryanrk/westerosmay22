@@ -79,39 +79,8 @@ export function LeadDetailsDialog({ lead, open, onOpenChange }: LeadDetailsDialo
 
   useEffect(() => {
     if (lead?.id) {
-      // Sample activities for the lead
-      const sampleActivities: Activity[] = [
-        {
-          id: "a1",
-          type: "status-change",
-          content: `Status changed from New to ${lead.status.charAt(0).toUpperCase() + lead.status.slice(1)}`,
-          timestamp: "May 15, 2023 • 10:30 AM",
-          user: "John Doe",
-        },
-        {
-          id: "a2",
-          type: "note",
-          content: "Lead is interested in 3-bedroom units with ocean view. Budget around $1.5M.",
-          timestamp: "May 15, 2023 • 10:35 AM",
-          user: "John Doe",
-        },
-        {
-          id: "a3",
-          type: "call",
-          content: "Had a follow-up call. Discussed financing options and potential move-in dates.",
-          timestamp: "May 17, 2023 • 2:15 PM",
-          user: "Sarah Johnson",
-        },
-        {
-          id: "a4",
-          type: "follow-up",
-          content: "Scheduled a property viewing for next week.",
-          timestamp: "May 18, 2023 • 9:00 AM",
-          user: "John Doe",
-        },
-      ]
-
-      setActivities(sampleActivities)
+      // Initialize with empty activities
+      setActivities([])
 
       // Set project based on lead's project
       const projectMatch = projects.find((p) => p.name === lead.project)
@@ -156,7 +125,7 @@ export function LeadDetailsDialog({ lead, open, onOpenChange }: LeadDetailsDialo
         type: "note",
         content: newNote,
         timestamp: new Date().toLocaleString(),
-        user: "John Doe",
+        user: "Current User",
       }
 
       setActivities([newActivity, ...activities])
@@ -176,7 +145,7 @@ export function LeadDetailsDialog({ lead, open, onOpenChange }: LeadDetailsDialo
         type: "follow-up",
         content: `Follow-up scheduled for ${format(date, "PPP")}`,
         timestamp: new Date().toLocaleString(),
-        user: "John Doe",
+        user: "Current User",
       }
 
       setActivities([newActivity, ...activities])
@@ -226,7 +195,7 @@ export function LeadDetailsDialog({ lead, open, onOpenChange }: LeadDetailsDialo
         type: "whatsapp",
         content: `WhatsApp message sent: "${whatsappMessage}"`,
         timestamp: new Date().toLocaleString(),
-        user: "John Doe",
+        user: "Current User",
       }
 
       setActivities([newActivity, ...activities])

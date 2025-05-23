@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { createClient } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -95,7 +96,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 // Hook for using auth context
@@ -119,7 +124,4 @@ export function useRequireAuth() {
   }, [user, isLoading, router]);
 
   return { user, isLoading };
-}
-
-// Import router to use in useRequireAuth hook
-import { useRouter } from 'next/navigation'; 
+} 

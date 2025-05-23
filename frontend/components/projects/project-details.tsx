@@ -43,40 +43,7 @@ export function ProjectDetails({ project, onSave, onClose }: ProjectDetailsProps
   const [type, setType] = useState(project.type || "")
   const [status, setStatus] = useState(project.status || "ongoing")
   const [selectedAgents, setSelectedAgents] = useState<string[]>(project.agentIds || [])
-  const [documents, setDocuments] = useState<Document[]>([
-    {
-      id: "doc1",
-      name: "Project Brochure.pdf",
-      type: "PDF",
-      size: "2.4 MB",
-      uploadedAt: "2023-05-10",
-      uploadedBy: "John Smith",
-    },
-    {
-      id: "doc2",
-      name: "Floor Plans.pdf",
-      type: "PDF",
-      size: "5.1 MB",
-      uploadedAt: "2023-05-12",
-      uploadedBy: "John Smith",
-    },
-    {
-      id: "doc3",
-      name: "Price List.xlsx",
-      type: "Excel",
-      size: "1.2 MB",
-      uploadedAt: "2023-05-15",
-      uploadedBy: "Sarah Johnson",
-    },
-    {
-      id: "doc4",
-      name: "Location Map.jpg",
-      type: "Image",
-      size: "3.5 MB",
-      uploadedAt: "2023-05-18",
-      uploadedBy: "John Smith",
-    },
-  ])
+  const [documents, setDocuments] = useState<Document[]>([])
 
   // Sample agents data - in a real app, this would come from an API
   const agents: Agent[] = [
