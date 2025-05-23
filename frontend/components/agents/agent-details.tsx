@@ -31,20 +31,16 @@ import {
   File,
 } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
+import { Agent, Project } from "@/lib/api"
 
 interface AgentDetailsProps {
-  agent: {
-    id: string
-    name: string
-    project: string
-    status: "active" | "inactive"
-    createdAt: string
-  }
+  agent: Agent
+  projects: Project[]
   onClose: () => void
-  onSave: (agent: any) => void
+  onSave: (agent: Agent) => void
 }
 
-export function AgentDetails({ agent, onClose, onSave }: AgentDetailsProps) {
+export function AgentDetails({ agent, projects, onClose, onSave }: AgentDetailsProps) {
   const [name, setName] = useState(agent.name)
   const [status, setStatus] = useState(agent.status)
   const [primaryColor, setPrimaryColor] = useState("#3B82F6")
@@ -63,6 +59,13 @@ export function AgentDetails({ agent, onClose, onSave }: AgentDetailsProps) {
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(120) // 2 minutes sample duration
   const [documents, setDocuments] = useState<any[]>([])
+
+  // Get project name
+  const getProjectName = (projectId?: string) => {
+    if (!projectId) return "No Project"
+    const project = projects.find(p => p.id === projectId)
+    return project ? project.name : "Unknown Project"
+  }
 
   // Sample conversations for the transcript tab
   const conversations = [
@@ -168,7 +171,7 @@ export function AgentDetails({ agent, onClose, onSave }: AgentDetailsProps) {
         name: file.name,
         size: file.size,
         type: file.type,
-        project: agent.project,
+        project: getProjectName(agent.project_id),
         agent: agent.name,
         uploadedAt: new Date().toISOString(),
         url: URL.createObjectURL(file),
@@ -194,7 +197,7 @@ export function AgentDetails({ agent, onClose, onSave }: AgentDetailsProps) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">{agent.name}</h2>
-          <p className="text-muted-foreground">Project: {agent.project}</p>
+          <p className="text-muted-foreground">Project: {getProjectName(agent.project_id)}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onClose}>
@@ -253,7 +256,13 @@ export function AgentDetails({ agent, onClose, onSave }: AgentDetailsProps) {
               </div>
               <div className="space-y-2">
                 <Label>Created On</Label>
-                <p className="text-sm text-muted-foreground">{agent.createdAt}</p>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(agent.created_at).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
               </div>
             </CardContent>
           </Card>
