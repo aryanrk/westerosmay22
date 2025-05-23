@@ -325,10 +325,10 @@ class API {
   }
   
   async deleteAgent(id: string): Promise<void> {
-    const { error } = await this.supabase
-      .from('agents')
-      .delete()
-      .eq('id', id);
+    const { data, error } = await this.supabase
+      .functions.invoke('delete-agent', {
+        body: { agent_id: id },
+      });
       
     if (error) throw error;
   }
