@@ -14,25 +14,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Agent, Project } from "@/lib/api"
 
-type Agent = {
-  id: string
-  name: string
-  project: string
-  status: "active" | "inactive"
-  createdAt: string
-  conversations: number
-}
-
-// Update the AgentTableProps interface to include onSelect
 interface AgentTableProps {
   agents: Agent[]
+  projects: Project[]
   onSelect: (agent: Agent) => void
   onDelete: (agentId: string) => void
 }
 
-// Update the function signature
-export function AgentTable({ agents, onSelect: onAgentClick, onDelete: onAgentDelete }: AgentTableProps) {
+export function AgentTable({ agents, projects, onSelect: onAgentClick, onDelete: onAgentDelete }: AgentTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [agentToDelete, setAgentToDelete] = useState<string | null>(null)
 
@@ -49,6 +40,20 @@ export function AgentTable({ agents, onSelect: onAgentClick, onDelete: onAgentDe
     setDeleteDialogOpen(false)
   }
 
+  const getProjectName = (projectId?: string) => {
+    if (!projectId) return "No Project"
+    const project = projects.find(p => p.id === projectId)
+    return project ? project.name : "Unknown Project"
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
+  }
+
   return (
     <>
       <div className="w-full overflow-auto">
@@ -58,7 +63,7 @@ export function AgentTable({ agents, onSelect: onAgentClick, onDelete: onAgentDe
               <TableHead className="w-[250px]">Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Project</TableHead>
-              <TableHead>Conversations</TableHead>
+              <TableHead>ElevenLabs ID</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -66,12 +71,11 @@ export function AgentTable({ agents, onSelect: onAgentClick, onDelete: onAgentDe
           <TableBody>
             {agents.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   No agents found. Create your first agent to get started.
                 </TableCell>
               </TableRow>
             ) : (
-              // Replace the TableRow mapping with clickable rows
               agents.map((agent) => (
                 <TableRow
                   key={agent.id}
@@ -86,12 +90,16 @@ export function AgentTable({ agents, onSelect: onAgentClick, onDelete: onAgentDe
                       <div
                         className={`h-2 w-2 rounded-full ${agent.status === "active" ? "bg-green-500" : "bg-gray-300"}`}
                       ></div>
-                      <span>{agent.status === "active" ? "Active" : "Inactive"}</span>
+                      <span className="capitalize">{agent.status}</span>
                     </div>
                   </TableCell>
-                  <TableCell>{agent.project}</TableCell>
-                  <TableCell>{agent.conversations}</TableCell>
-                  <TableCell>{agent.createdAt}</TableCell>
+                  <TableCell>{getProjectName(agent.project_id)}</TableCell>
+                  <TableCell>
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {agent.eleven_labs_agent_id ? agent.eleven_labs_agent_id.substring(0, 8) + '...' : 'Not configured'}
+                    </span>
+                  </TableCell>
+                  <TableCell>{formatDate(agent.created_at)}</TableCell>
                   <TableCell>
                     <div className="flex justify-end">
                       <Button
@@ -99,7 +107,7 @@ export function AgentTable({ agents, onSelect: onAgentClick, onDelete: onAgentDe
                         size="icon"
                         onClick={(e) => {
                           e.stopPropagation()
-                          onAgentDelete(agent.id)
+                          handleDelete(agent.id)
                         }}
                       >
                         <Trash2 className="h-4 w-4" />
