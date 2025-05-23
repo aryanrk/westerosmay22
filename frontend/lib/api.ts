@@ -304,13 +304,12 @@ class API {
   
   async createAgent(agent: Partial<Agent>): Promise<Agent> {
     const { data, error } = await this.supabase
-      .from('agents')
-      .insert(agent)
-      .select()
-      .single();
+      .functions.invoke('create-agent', {
+        body: agent,
+      });
       
     if (error) throw error;
-    return data;
+    return data.agent;
   }
   
   async updateAgent(id: string, agent: Partial<Agent>): Promise<Agent> {
