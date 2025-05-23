@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ProfileButton } from "@/components/auth/profile-button";
+// import { ProfileButton } from "@/components/auth/profile-button";
 
 export default function Home() {
   return (
@@ -32,9 +32,9 @@ export default function Home() {
             About
           </Link>
         </nav>
-        <div className="ml-4">
+        {/* <div className="ml-4">
           <ProfileButton />
-        </div>
+        </div> */}
       </header>
       
       {/* Hero */}

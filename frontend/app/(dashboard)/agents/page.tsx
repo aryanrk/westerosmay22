@@ -8,40 +8,8 @@ import { CreateAgentDialog } from "@/components/agents/create-agent-dialog"
 import { AgentDetails } from "@/components/agents/agent-details"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
-// Sample data
-const sampleAgents = [
-  {
-    id: "1",
-    name: "Luxury Towers Assistant",
-    project: "Luxury Towers",
-    status: "active" as const,
-    createdAt: "May 10, 2023",
-  },
-  {
-    id: "2",
-    name: "Garden Villas Guide",
-    project: "Garden Villas",
-    status: "active" as const,
-    createdAt: "Jun 15, 2023",
-  },
-  {
-    id: "3",
-    name: "Downtown Lofts Expert",
-    project: "Downtown Lofts",
-    status: "inactive" as const,
-    createdAt: "Jul 22, 2023",
-  },
-  {
-    id: "4",
-    name: "Seaside Residences Specialist",
-    project: "Seaside Residences",
-    status: "active" as const,
-    createdAt: "Aug 5, 2023",
-  },
-]
-
 export default function AgentsPage() {
-  const [agents, setAgents] = useState(sampleAgents)
+  const [agents, setAgents] = useState([])
   const [createAgentOpen, setCreateAgentOpen] = useState(false)
   const [selectedAgent, setSelectedAgent] = useState<any>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
@@ -92,7 +60,7 @@ export default function AgentsPage() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-lg border shadow-sm">
+      <div className="bg-background rounded-lg border shadow-sm">
         <AgentTable agents={agents} onSelect={handleEditAgent} onDelete={handleDeleteAgent} />
       </div>
 
