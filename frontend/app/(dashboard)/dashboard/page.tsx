@@ -178,7 +178,12 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <CreateAgentDialog open={createAgentOpen} onOpenChange={setCreateAgentOpen} onSubmit={handleCreateAgent} />
+      <CreateAgentDialog 
+        open={createAgentOpen} 
+        onOpenChange={setCreateAgentOpen} 
+        onSubmit={handleCreateAgent} 
+        projects={[]} 
+      />
     </div>
   )
 }
