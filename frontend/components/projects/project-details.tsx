@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/components/ui/use-toast"
 import { Building, FileText, Upload, X, Download, Eye, Calendar, Users } from "lucide-react"
+import { Project } from "@/lib/api"
 
 interface Agent {
   id: string
@@ -31,18 +32,16 @@ interface Document {
 }
 
 interface ProjectDetailsProps {
-  project: any
-  onSave: (project: any) => void
+  project: Project
+  onSave: (project: Project) => void
   onClose: () => void
 }
 
 export function ProjectDetails({ project, onSave, onClose }: ProjectDetailsProps) {
   const [name, setName] = useState(project.name)
-  const [description, setDescription] = useState(project.description)
-  const [location, setLocation] = useState(project.location || "")
-  const [type, setType] = useState(project.type || "")
-  const [status, setStatus] = useState(project.status || "ongoing")
-  const [selectedAgents, setSelectedAgents] = useState<string[]>(project.agentIds || [])
+  const [description, setDescription] = useState(project.description || "")
+  const [status, setStatus] = useState(project.status)
+  const [selectedAgents, setSelectedAgents] = useState<string[]>([])
   const [documents, setDocuments] = useState<Document[]>([])
 
   // Sample agents data - in a real app, this would come from an API
@@ -72,11 +71,7 @@ export function ProjectDetails({ project, onSave, onClose }: ProjectDetailsProps
       ...project,
       name,
       description,
-      location,
-      type,
       status,
-      agentIds: selectedAgents,
-      documents: documents.length,
     })
   }
 
@@ -94,12 +89,14 @@ export function ProjectDetails({ project, onSave, onClose }: ProjectDetailsProps
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "upcoming":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Upcoming</Badge>
-      case "ongoing":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ongoing</Badge>
+      case "planning":
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Planning</Badge>
+      case "active":
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
       case "completed":
         return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Completed</Badge>
+      case "paused":
+        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Paused</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -111,7 +108,9 @@ export function ProjectDetails({ project, onSave, onClose }: ProjectDetailsProps
         <div>
           <h2 className="text-2xl font-bold">{project.name}</h2>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-muted-foreground">{project.location}</span>
+            <span className="text-muted-foreground">
+              Created: {new Date(project.created_at).toLocaleDateString()}
+            </span>
             {getStatusBadge(project.status)}
           </div>
         </div>
@@ -168,54 +167,35 @@ export function ProjectDetails({ project, onSave, onClose }: ProjectDetailsProps
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="project-location">Location</Label>
-                  <Input
-                    id="project-location"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Enter location"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="project-type">Property Type</Label>
-                  <Input
-                    id="project-type"
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    placeholder="e.g., Residential, Commercial"
-                  />
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="project-status">Status</Label>
                 <div className="flex gap-4">
                   <div className="flex items-center space-x-2">
                     <input
                       type="radio"
-                      id="status-upcoming"
-                      checked={status === "upcoming"}
-                      onChange={() => setStatus("upcoming")}
-                      className="h-4 w-4 rounded-full"
+                      id="status-planning"
+                      checked={status === "planning"}
+                      onChange={() => setStatus("planning")}
                     />
-                    <Label htmlFor="status-upcoming" className="cursor-pointer">
-                      Upcoming
-                    </Label>
+                    <Label htmlFor="status-planning">Planning</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <input
                       type="radio"
-                      id="status-ongoing"
-                      checked={status === "ongoing"}
-                      onChange={() => setStatus("ongoing")}
-                      className="h-4 w-4 rounded-full"
+                      id="status-active"
+                      checked={status === "active"}
+                      onChange={() => setStatus("active")}
                     />
-                    <Label htmlFor="status-ongoing" className="cursor-pointer">
-                      Ongoing
-                    </Label>
+                    <Label htmlFor="status-active">Active</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="status-paused"
+                      checked={status === "paused"}
+                      onChange={() => setStatus("paused")}
+                    />
+                    <Label htmlFor="status-paused">Paused</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <input
@@ -223,11 +203,8 @@ export function ProjectDetails({ project, onSave, onClose }: ProjectDetailsProps
                       id="status-completed"
                       checked={status === "completed"}
                       onChange={() => setStatus("completed")}
-                      className="h-4 w-4 rounded-full"
                     />
-                    <Label htmlFor="status-completed" className="cursor-pointer">
-                      Completed
-                    </Label>
+                    <Label htmlFor="status-completed">Completed</Label>
                   </div>
                 </div>
               </div>

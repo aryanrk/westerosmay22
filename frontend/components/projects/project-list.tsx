@@ -16,18 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-
-interface Project {
-  id: string
-  name: string
-  description: string
-  location: string
-  type: string
-  status: "upcoming" | "ongoing" | "completed"
-  agents: number
-  documents: number
-  thumbnail?: string
-}
+import { Project } from "@/lib/api"
 
 // Update the ProjectListProps interface
 interface ProjectListProps {
@@ -57,12 +46,16 @@ export function ProjectList({ projects, onSelect, onDelete, onCreateNew }: Proje
 
   const getStatusBadge = (status: string) => {
     switch (status) {
+      case "planning":
       case "upcoming":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Upcoming</Badge>
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Planning</Badge>
+      case "active":
       case "ongoing":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ongoing</Badge>
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
       case "completed":
         return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Completed</Badge>
+      case "paused":
+        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Paused</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -95,17 +88,9 @@ export function ProjectList({ projects, onSelect, onDelete, onCreateNew }: Proje
             onClick={() => onSelect(project)}
           >
             <div className="aspect-video bg-muted relative">
-              {project.thumbnail ? (
-                <img
-                  src={project.thumbnail || "/placeholder.svg"}
-                  alt={project.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-primary/10">
-                  <Building className="h-10 w-10 text-primary/40" />
-                </div>
-              )}
+              <div className="flex h-full w-full items-center justify-center bg-primary/10">
+                <Building className="h-10 w-10 text-primary/40" />
+              </div>
               <div className="absolute top-2 right-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -138,19 +123,23 @@ export function ProjectList({ projects, onSelect, onDelete, onCreateNew }: Proje
                 <CardTitle className="text-lg">{project.name}</CardTitle>
                 {getStatusBadge(project.status)}
               </div>
-              <CardDescription>{project.location}</CardDescription>
+              <CardDescription>
+                {new Date(project.created_at).toLocaleDateString()}
+              </CardDescription>
             </CardHeader>
             <CardContent className="pb-2">
-              <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {project.description || "No description provided"}
+              </p>
             </CardContent>
             <CardFooter className="flex justify-between text-sm text-muted-foreground pt-2">
               <div className="flex items-center">
                 <Users className="mr-1 h-4 w-4" />
-                <span>{project.agents} Agents</span>
+                <span>0 Agents</span>
               </div>
               <div className="flex items-center">
                 <FileText className="mr-1 h-4 w-4" />
-                <span>{project.documents} Documents</span>
+                <span>0 Documents</span>
               </div>
             </CardFooter>
           </Card>
