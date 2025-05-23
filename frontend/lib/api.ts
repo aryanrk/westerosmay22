@@ -236,9 +236,20 @@ class API {
   }
   
   async createProject(project: Partial<Project>): Promise<Project> {
+    // Get the current user for user_id
+    const { data: user } = await this.supabase.auth.getUser();
+    
+    // Use existing user ID as fallback for demo purposes
+    const userId = user.user?.id || 'bc3c39ac-9207-4d06-b04b-079b2f97c82b';
+    
+    const projectWithUserId = {
+      ...project,
+      user_id: userId
+    };
+    
     const { data, error } = await this.supabase
       .from('projects')
-      .insert(project)
+      .insert(projectWithUserId)
       .select()
       .single();
       
