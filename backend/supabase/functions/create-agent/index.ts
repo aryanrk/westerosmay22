@@ -30,7 +30,7 @@ serve(async (req) => {
     const supabaseKey = req.headers.get('apikey') || Deno.env.get('SUPABASE_ANON_KEY') || '';
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    const { name, project_id, organization_id, system_prompt, voice_id } = await req.json();
+    const { name, project_id, organization_id, system_prompt, first_message, voice_id } = await req.json();
     
     if (!name || !organization_id) {
       return new Response(
@@ -47,7 +47,7 @@ serve(async (req) => {
           prompt: {
             prompt: system_prompt || `You are ${name}, a helpful AI assistant for real estate inquiries. You help potential buyers and renters with property information, scheduling viewings, and answering questions about available properties. Be friendly, professional, and knowledgeable about real estate.`
           },
-          first_message: `Hi! I'm ${name}, your AI assistant. How can I help you with your real estate needs today?`
+          first_message: first_message || `Hi! I'm ${name}, your AI assistant. How can I help you with your real estate needs today?`
         }
       }
     };
@@ -89,6 +89,7 @@ serve(async (req) => {
         eleven_labs_agent_id: elevenLabsAgent.agent_id,
         voice_id: voice_id || '21m00Tcm4TlvDq8ikWAM',
         system_prompt: system_prompt || `You are ${name}, a helpful AI assistant for real estate inquiries.`,
+        first_message: first_message || `Hi! I'm ${name}, your AI assistant. How can I help you with your real estate needs today?`,
         status: 'active',
         configuration: {
           voice_settings: {

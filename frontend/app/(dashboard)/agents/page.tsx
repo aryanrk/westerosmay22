@@ -69,9 +69,12 @@ export default function AgentsPage() {
     try {
       setCreating(true)
       
-      // Create the agent
+      // Create the agent with all required ElevenLabs fields
       const newAgent = await api.createAgent({
         name: data.name,
+        system_prompt: data.system_prompt,
+        first_message: data.first_message,
+        voice_id: data.voice_id,
         project_id: data.project,
         organization_id: organizationId,
         status: 'active',
