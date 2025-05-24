@@ -305,11 +305,12 @@ class API {
   async createAgent(agent: Partial<Agent>): Promise<Agent> {
     const { data, error } = await this.supabase
       .functions.invoke('create-agent', {
+        method: 'POST',
         body: agent,
       });
       
     if (error) throw error;
-    return data.agent;
+    return data;
   }
   
   async updateAgent(id: string, agent: Partial<Agent>): Promise<Agent> {
@@ -327,6 +328,7 @@ class API {
   async deleteAgent(id: string): Promise<void> {
     const { data, error } = await this.supabase
       .functions.invoke('delete-agent', {
+        method: 'POST',
         body: { agent_id: id },
       });
       
