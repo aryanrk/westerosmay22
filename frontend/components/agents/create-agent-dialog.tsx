@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Project } from "@/lib/api"
 
@@ -29,6 +30,20 @@ interface CreateAgentDialogProps {
 export function CreateAgentDialog({ open, onOpenChange, onSubmit, projects, loading = false }: CreateAgentDialogProps) {
   const [files, setFiles] = useState<File[]>([])
   const [selectedProject, setSelectedProject] = useState<string>("")
+  const [selectedVoice, setSelectedVoice] = useState<string>("")
+
+  // Available ElevenLabs voices
+  const voices = [
+    { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel - Calm" },
+    { id: "AZnzlk1XvdvUeBnXmlld", name: "Domi - Strong" },
+    { id: "EXAVITQu4vr4xnSDxMaL", name: "Bella - Soft" },
+    { id: "ErXwobaYiN019PkySvjV", name: "Antoni - Well-rounded" },
+    { id: "MF3mGyEYCl7XYWbV9V6O", name: "Elli - Emotional" },
+    { id: "TxGEqnHWrfWFTfGW9XjX", name: "Josh - Deep" },
+    { id: "VR6AewLTigWG4xSOukaG", name: "Arnold - Crisp" },
+    { id: "pNInz6obpgDQGcFmaJgB", name: "Adam - Deep" },
+    { id: "yoZ06aMxZJJ28mfd3POQ", name: "Sam - Raspy" },
+  ]
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -46,6 +61,9 @@ export function CreateAgentDialog({ open, onOpenChange, onSubmit, projects, load
     const formData = new FormData(e.target as HTMLFormElement)
     const data = {
       name: formData.get("name"),
+      system_prompt: formData.get("system_prompt"),
+      first_message: formData.get("first_message"),
+      voice_id: selectedVoice,
       project: selectedProject,
       files,
     }
@@ -54,12 +72,14 @@ export function CreateAgentDialog({ open, onOpenChange, onSubmit, projects, load
     // Reset form
     setFiles([])
     setSelectedProject("")
+    setSelectedVoice("")
     ;(e.target as HTMLFormElement).reset()
   }
 
   const resetForm = () => {
     setFiles([])
     setSelectedProject("")
+    setSelectedVoice("")
   }
 
   return (
@@ -69,7 +89,7 @@ export function CreateAgentDialog({ open, onOpenChange, onSubmit, projects, load
       }
       onOpenChange(isOpen)
     }}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Agent</DialogTitle>
           <DialogDescription>Configure your AI voice assistant agent for real estate projects.</DialogDescription>
@@ -86,6 +106,61 @@ export function CreateAgentDialog({ open, onOpenChange, onSubmit, projects, load
                 disabled={loading}
               />
             </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="system_prompt">System Prompt *</Label>
+              <Textarea
+                id="system_prompt"
+                name="system_prompt"
+                placeholder="You are a professional real estate assistant specializing in luxury properties. You help clients find their dream homes by understanding their needs and providing expert guidance..."
+                rows={4}
+                required
+                disabled={loading}
+              />
+              <p className="text-xs text-muted-foreground">
+                This defines how your agent behaves and responds to users. Be specific about the agent's role and expertise.
+              </p>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="first_message">First Message *</Label>
+              <Textarea
+                id="first_message"
+                name="first_message"
+                placeholder="Hi! I'm your personal real estate assistant. I'm here to help you find the perfect property. What type of home are you looking for today?"
+                rows={3}
+                required
+                disabled={loading}
+              />
+              <p className="text-xs text-muted-foreground">
+                The initial greeting message users will hear when they start a conversation.
+              </p>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="voice">Voice *</Label>
+              <Select 
+                value={selectedVoice} 
+                onValueChange={setSelectedVoice}
+                required
+                disabled={loading}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a voice" />
+                </SelectTrigger>
+                <SelectContent>
+                  {voices.map((voice) => (
+                    <SelectItem key={voice.id} value={voice.id}>
+                      {voice.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Choose the voice that best fits your brand and customer base.
+              </p>
+            </div>
+
             <div className="grid gap-2">
               <Label htmlFor="project">Project</Label>
               <Select 
@@ -112,8 +187,9 @@ export function CreateAgentDialog({ open, onOpenChange, onSubmit, projects, load
                 </SelectContent>
               </Select>
             </div>
+
             <div className="grid gap-2">
-              <Label>Knowledge Base Files</Label>
+              <Label>Knowledge Base Files (Optional)</Label>
               <div className="border-2 border-dashed rounded-2xl p-6 text-center">
                 <Input
                   type="file"
@@ -158,7 +234,7 @@ export function CreateAgentDialog({ open, onOpenChange, onSubmit, projects, load
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || projects.length === 0}>
+            <Button type="submit" disabled={loading || projects.length === 0 || !selectedVoice}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

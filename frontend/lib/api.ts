@@ -35,6 +35,7 @@ export type Agent = {
   eleven_labs_agent_id?: string;
   voice_id?: string;
   system_prompt?: string;
+  first_message?: string;
   status: string;
   configuration: Record<string, any>;
   created_at: string;
