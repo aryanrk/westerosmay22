@@ -303,19 +303,32 @@ class API {
   }
   
   async createAgent(agent: Partial<Agent>): Promise<Agent> {
+    console.log('🚀 createAgent called with:', agent);
+    
+    const payload = {
+      name: agent.name,
+      project_id: agent.project_id,
+      organization_id: agent.organization_id,
+      system_prompt: agent.system_prompt,
+      voice_id: agent.voice_id
+    };
+    
+    console.log('📤 Calling Edge Function with payload:', payload);
+    
     const { data, error } = await this.supabase
       .functions.invoke('create-agent', {
         method: 'POST',
-        body: {
-          name: agent.name,
-          project_id: agent.project_id,
-          organization_id: agent.organization_id,
-          system_prompt: agent.system_prompt,
-          voice_id: agent.voice_id
-        },
+        body: payload,
       });
       
-    if (error) throw error;
+    console.log('📥 Edge Function response:', { data, error });
+    
+    if (error) {
+      console.error('❌ Edge Function error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Returning agent:', data.agent);
     return data.agent;
   }
   
