@@ -294,11 +294,18 @@ class API {
   }
   
   async createAgent(agent: Partial<Agent>): Promise<Agent> {
+    // Use Edge Function instead of direct database insertion
     const { data, error } = await this.supabase
-      .from('agents')
-      .insert(agent)
-      .select()
-      .single();
+      .functions.invoke('create-agent', {
+        method: 'POST',
+        body: {
+          name: agent.name,
+          project_id: agent.project_id,
+          organization_id: agent.organization_id,
+          configuration: agent.configuration || {},
+          status: agent.status || 'active'
+        },
+      });
       
     if (error) throw error;
     return data;
@@ -317,10 +324,12 @@ class API {
   }
   
   async deleteAgent(id: string): Promise<void> {
+    // Use Edge Function for integrated deletion (database + ElevenLabs)
     const { error } = await this.supabase
-      .from('agents')
-      .delete()
-      .eq('id', id);
+      .functions.invoke('delete-agent', {
+        method: 'POST',
+        body: { agent_id: id }
+      });
       
     if (error) throw error;
   }
