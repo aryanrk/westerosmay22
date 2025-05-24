@@ -306,11 +306,17 @@ class API {
     const { data, error } = await this.supabase
       .functions.invoke('create-agent', {
         method: 'POST',
-        body: agent,
+        body: {
+          name: agent.name,
+          project_id: agent.project_id,
+          organization_id: agent.organization_id,
+          system_prompt: agent.system_prompt,
+          voice_id: agent.voice_id
+        },
       });
       
     if (error) throw error;
-    return data;
+    return data.agent;
   }
   
   async updateAgent(id: string, agent: Partial<Agent>): Promise<Agent> {
