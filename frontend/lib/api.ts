@@ -309,9 +309,15 @@ class API {
       name: agent.name,
       project_id: agent.project_id,
       organization_id: agent.organization_id,
-      system_prompt: agent.system_prompt,
-      voice_id: agent.voice_id
+      system_prompt: agent.system_prompt || undefined,
+      voice_id: agent.voice_id || undefined
     };
+    
+    Object.keys(payload).forEach(key => {
+      if (payload[key] === undefined) {
+        delete payload[key];
+      }
+    });
     
     console.log('📤 Calling Edge Function with payload:', payload);
     
