@@ -303,17 +303,20 @@ class API {
     return data;
   }
   
-  async createAgent(agent: Partial<Agent>): Promise<Agent> {
+  async createAgent(agent: Partial<Agent> & { files?: any[] }): Promise<Agent> {
     console.log('🚀 createAgent called with:', agent);
     
-    const payload = {
+    const payload: Record<string, any> = {
       name: agent.name,
       project_id: agent.project_id,
       organization_id: agent.organization_id,
       system_prompt: agent.system_prompt || undefined,
-      voice_id: agent.voice_id || undefined
+      first_message: agent.first_message || undefined,
+      voice_id: agent.voice_id || undefined,
+      files: agent.files || []
     };
     
+    // Remove undefined properties
     Object.keys(payload).forEach(key => {
       if (payload[key] === undefined) {
         delete payload[key];

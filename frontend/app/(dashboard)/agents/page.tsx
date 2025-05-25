@@ -69,7 +69,29 @@ export default function AgentsPage() {
     try {
       setCreating(true)
       
-      // Create the agent with all required ElevenLabs fields
+      // Convert files to base64 format for ElevenLabs upload
+      let processedFiles = [];
+      if (data.files && data.files.length > 0) {
+        const filePromises = data.files.map((file: File) => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64Content = reader.result?.toString().split(',')[1]; // Remove data:type;base64, prefix
+              resolve({
+                name: file.name,
+                content: base64Content,
+                type: file.type,
+                size: file.size
+              });
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+        
+        processedFiles = await Promise.all(filePromises);
+      }
+      
+      // Create the agent with all required ElevenLabs fields including files
       const newAgent = await api.createAgent({
         name: data.name,
         system_prompt: data.system_prompt,
@@ -77,6 +99,7 @@ export default function AgentsPage() {
         voice_id: data.voice_id,
         project_id: data.project,
         organization_id: organizationId,
+        files: processedFiles, // Pass processed files to ElevenLabs
         status: 'active',
         configuration: {
           voice_settings: {
@@ -86,26 +109,12 @@ export default function AgentsPage() {
         }
       })
 
-      // Upload documents if provided
-      if (data.files && data.files.length > 0) {
-        const uploadPromises = data.files.map((file: File) => 
-          api.uploadDocument(file, data.project, organizationId)
-        )
-        
-        try {
-          await Promise.all(uploadPromises)
-          toast({
-            title: "Success",
-            description: `Agent created successfully with ${data.files.length} document(s) uploaded!`,
-          })
-        } catch (uploadError) {
-          console.error('Error uploading documents:', uploadError)
-          toast({
-            title: "Agent Created",
-            description: "Agent created but some documents failed to upload. You can upload them later.",
-            variant: "destructive",
-          })
-        }
+      // Show success message with file count
+      if (processedFiles.length > 0) {
+        toast({
+          title: "Success",
+          description: `Agent created successfully with ${processedFiles.length} document(s) uploaded to knowledge base!`,
+        })
       } else {
         toast({
           title: "Success",
