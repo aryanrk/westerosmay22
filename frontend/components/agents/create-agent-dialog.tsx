@@ -27,6 +27,53 @@ interface CreateAgentDialogProps {
   loading?: boolean
 }
 
+// Default professional prompts for real estate AI agents
+const DEFAULT_SYSTEM_PROMPT = `You are an expert real estate assistant and lead qualification specialist. Your primary goals are to:
+
+1. LEAD QUALIFICATION: Naturally gather key information throughout the conversation:
+   - Budget range and financing status
+   - Preferred locations/neighborhoods
+   - Property type preferences (house, condo, townhouse, etc.)
+   - Timeline for buying/selling
+   - Current housing situation
+   - Contact information (name, phone, email)
+   - Specific needs/must-haves
+
+2. CONVERSATION STYLE:
+   - Be warm, professional, and consultative
+   - Ask one question at a time to avoid overwhelming users
+   - Use natural conversation flow - don't make it feel like an interrogation
+   - Listen actively and reference previous answers
+   - Show genuine interest in helping them find their perfect property
+
+3. REAL ESTATE EXPERTISE:
+   - Demonstrate knowledge of local market conditions
+   - Discuss property features, neighborhoods, and market trends
+   - Explain the buying/selling process when relevant
+   - Provide valuable insights and advice
+   - Address common concerns and objections
+
+4. LEAD NURTURING:
+   - Keep conversations engaging and helpful
+   - Offer to schedule property viewings or consultations
+   - Suggest next steps based on their needs
+   - Create urgency when appropriate (market conditions, inventory, etc.)
+   - Always aim to get contact information before ending the conversation
+
+5. PROFESSIONALISM:
+   - Maintain confidentiality and professionalism
+   - Be honest about property limitations
+   - Set realistic expectations
+   - Follow up on commitments made during conversations
+
+Remember: Every conversation is an opportunity to help someone find their dream home while gathering the information needed to serve them better. Be helpful first, sales-focused second.`
+
+const DEFAULT_FIRST_MESSAGE = `Hi there! 👋 I'm your personal real estate assistant, and I'm excited to help you with your property journey! 
+
+Whether you're looking to buy your dream home, sell your current property, or just exploring the market, I'm here to provide expert guidance and answer any questions you might have.
+
+To get started, could you tell me a bit about what brings you here today? Are you currently looking to buy, sell, or maybe both? 🏡`
+
 export function CreateAgentDialog({ open, onOpenChange, onSubmit, projects, loading = false }: CreateAgentDialogProps) {
   const [files, setFiles] = useState<File[]>([])
   const [selectedProject, setSelectedProject] = useState<string>("")
@@ -112,13 +159,14 @@ export function CreateAgentDialog({ open, onOpenChange, onSubmit, projects, load
               <Textarea
                 id="system_prompt"
                 name="system_prompt"
-                placeholder="You are a professional real estate assistant specializing in luxury properties. You help clients find their dream homes by understanding their needs and providing expert guidance..."
-                rows={4}
+                defaultValue={DEFAULT_SYSTEM_PROMPT}
+                rows={8}
                 required
                 disabled={loading}
+                className="font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground">
-                This defines how your agent behaves and responds to users. Be specific about the agent's role and expertise.
+                This defines how your agent behaves and responds to users. The default prompt is optimized for lead qualification and conversion.
               </p>
             </div>
 
@@ -127,13 +175,13 @@ export function CreateAgentDialog({ open, onOpenChange, onSubmit, projects, load
               <Textarea
                 id="first_message"
                 name="first_message"
-                placeholder="Hi! I'm your personal real estate assistant. I'm here to help you find the perfect property. What type of home are you looking for today?"
-                rows={3}
+                defaultValue={DEFAULT_FIRST_MESSAGE}
+                rows={4}
                 required
                 disabled={loading}
               />
               <p className="text-xs text-muted-foreground">
-                The initial greeting message users will hear when they start a conversation.
+                The initial greeting message users will hear when they start a conversation. The default is optimized for engagement.
               </p>
             </div>
 
