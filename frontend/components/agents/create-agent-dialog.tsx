@@ -81,15 +81,15 @@ export function CreateAgentDialog({ open, onOpenChange, onSubmit, projects, load
 
   // Available ElevenLabs voices
   const voices = [
-    { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel - Calm" },
-    { id: "AZnzlk1XvdvUeBnXmlld", name: "Domi - Strong" },
-    { id: "EXAVITQu4vr4xnSDxMaL", name: "Bella - Soft" },
+    { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel - Calm and Professional" },
+    { id: "pNInz6obpgDQGcFmaJgB", name: "Adam - Deep and Authoritative" },
     { id: "ErXwobaYiN019PkySvjV", name: "Antoni - Well-rounded" },
-    { id: "MF3mGyEYCl7XYWbV9V6O", name: "Elli - Emotional" },
-    { id: "TxGEqnHWrfWFTfGW9XjX", name: "Josh - Deep" },
-    { id: "VR6AewLTigWG4xSOukaG", name: "Arnold - Crisp" },
-    { id: "pNInz6obpgDQGcFmaJgB", name: "Adam - Deep" },
-    { id: "yoZ06aMxZJJ28mfd3POQ", name: "Sam - Raspy" },
+    { id: "VR6AewLTigWG4xSOukaG", name: "Arnold - Crisp and Clear" },
+    { id: "EXAVITQu4vr4xnSDxMaL", name: "Bella - Soft and Gentle" },
+    { id: "AZnzlk1XvdvUeBnXmlld", name: "Domi - Strong and Confident" },
+    { id: "MF3mGyEYCl7XYWbV9V6O", name: "Elli - Emotional and Expressive" },
+    { id: "TxGEqnHWrfWFTfGW9XjX", name: "Josh - Deep and Resonant" },
+    { id: "yoZ06aMxZJJ28mfd3POQ", name: "Sam - Raspy and Distinctive" },
   ]
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

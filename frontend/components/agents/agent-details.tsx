@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -59,6 +57,17 @@ export function AgentDetails({ agent, projects, onClose, onSave }: AgentDetailsP
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(120) // 2 minutes sample duration
   const [documents, setDocuments] = useState<any[]>([])
+  const [isUploadingDocuments, setIsUploadingDocuments] = useState(false)
+  const [textName, setTextName] = useState("")
+  const [textContent, setTextContent] = useState("")
+  const [isCreatingText, setIsCreatingText] = useState(false)
+
+  // Initialize documents from agent configuration using useEffect
+  useEffect(() => {
+    if (agent.configuration?.knowledge_base_items) {
+      setDocuments(agent.configuration.knowledge_base_items)
+    }
+  }, [agent.configuration?.knowledge_base_items])
 
   // Get project name
   const getProjectName = (projectId?: string) => {
@@ -164,23 +173,101 @@ export function AgentDetails({ agent, projects, onClose, onSave }: AgentDetailsP
     return `${mins}:${secs.toString().padStart(2, "0")}`
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files).map((file) => ({
-        id: Math.random().toString(36).substring(7),
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        project: getProjectName(agent.project_id),
-        agent: agent.name,
-        uploadedAt: new Date().toISOString(),
-        url: URL.createObjectURL(file),
-      }))
-      setDocuments((prev) => [...prev, ...newFiles])
-      toast({
-        title: "Files uploaded",
-        description: `${newFiles.length} file(s) have been uploaded successfully.`,
-      })
+      console.log('📁 Starting file upload process...');
+      setIsUploadingDocuments(true)
+      const newFiles = Array.from(e.target.files)
+      console.log(`📄 Selected ${newFiles.length} files:`, newFiles.map(f => ({ name: f.name, size: f.size, type: f.type })));
+      
+      try {
+        // Convert files to base64 for upload
+        console.log('🔄 Converting files to base64...');
+        const filePromises = newFiles.map((file: File) => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64Content = reader.result?.toString().split(',')[1];
+              console.log(`✅ Converted ${file.name} to base64 (${base64Content?.length} chars)`);
+              resolve({
+                name: file.name,
+                content: base64Content,
+                type: file.type,
+                size: file.size
+              });
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+        
+        const processedFiles = await Promise.all(filePromises);
+        console.log('✅ All files converted to base64');
+        
+        // Upload documents via API
+        console.log('🚀 Calling upload API with payload:', {
+          agent_id: agent.id,
+          eleven_labs_agent_id: agent.eleven_labs_agent_id,
+          files_count: processedFiles.length
+        });
+        
+        // Check if eleven_labs_agent_id exists
+        if (!agent.eleven_labs_agent_id) {
+          console.error('❌ Missing eleven_labs_agent_id in agent object:', agent);
+          throw new Error('Agent is missing ElevenLabs agent ID. Cannot upload documents.');
+        }
+        
+        const response = await fetch('/api/agents/upload-documents', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            agent_id: agent.id,
+            eleven_labs_agent_id: agent.eleven_labs_agent_id,
+            files: processedFiles
+          })
+        });
+        
+        console.log(`📡 API Response Status: ${response.status}`);
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ API Response:', result);
+          
+          // Update local documents state with uploaded files
+          const uploadedDocs = processedFiles.map((file: any) => ({
+            id: Math.random().toString(36).substring(7),
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            project: getProjectName(agent.project_id),
+            agent: agent.name,
+            uploadedAt: new Date().toISOString(),
+          }));
+          
+          setDocuments((prev) => [...prev, ...uploadedDocs]);
+          console.log('✅ Updated local documents state');
+          
+          toast({
+            title: "Documents uploaded successfully",
+            description: `${processedFiles.length} document(s) have been uploaded to the agent's knowledge base.`,
+          });
+        } else {
+          const errorText = await response.text();
+          console.error('❌ API Error Response:', errorText);
+          throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+        }
+      } catch (error) {
+        console.error('💥 Error uploading documents:', error);
+        toast({
+          title: "Upload failed",
+          description: "Failed to upload documents. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsUploadingDocuments(false);
+        console.log('🏁 Upload process completed');
+      }
     }
   }
 
@@ -190,6 +277,96 @@ export function AgentDetails({ agent, projects, onClose, onSave }: AgentDetailsP
       title: "File removed",
       description: "The document has been removed successfully.",
     })
+  }
+
+  const handleCreateText = async () => {
+    if (!textName.trim() || !textContent.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please provide both text name and content.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('📝 Starting text creation process...');
+    setIsCreatingText(true);
+
+    try {
+      // Check if eleven_labs_agent_id exists
+      if (!agent.eleven_labs_agent_id) {
+        console.error('❌ Missing eleven_labs_agent_id in agent object:', agent);
+        throw new Error('Agent is missing ElevenLabs agent ID. Cannot create text document.');
+      }
+
+      console.log('🚀 Creating text document with payload:', {
+        agent_id: agent.id,
+        eleven_labs_agent_id: agent.eleven_labs_agent_id,
+        textName: textName.trim(),
+        textContent: textContent.trim()
+      });
+
+      const response = await fetch('/api/agents/upload-documents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          agent_id: agent.id,
+          eleven_labs_agent_id: agent.eleven_labs_agent_id,
+          textDocuments: [{
+            name: textName.trim(),
+            content: textContent.trim()
+          }]
+        })
+      });
+
+      console.log(`📡 API Response Status: ${response.status}`);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ API Response:', result);
+
+        // Update local documents state with created text
+        const newTextDoc = {
+          id: Math.random().toString(36).substring(7),
+          name: textName.trim(),
+          size: textContent.length,
+          type: "text/plain",
+          project: getProjectName(agent.project_id),
+          agent: agent.name,
+          uploadedAt: new Date().toISOString(),
+          isText: true,
+          content: textContent.trim()
+        };
+
+        setDocuments((prev) => [...prev, newTextDoc]);
+        console.log('✅ Updated local documents state with text document');
+
+        // Clear form
+        setTextName("");
+        setTextContent("");
+
+        toast({
+          title: "Text document created successfully",
+          description: "The text content has been added to the agent's knowledge base.",
+        });
+      } else {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`Text creation failed: ${response.status} - ${errorText}`);
+      }
+    } catch (error) {
+      console.error('💥 Error creating text document:', error);
+      toast({
+        title: "Text creation failed",
+        description: "Failed to create text document. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingText(false);
+      console.log('🏁 Text creation process completed');
+    }
   }
 
   return (
@@ -471,15 +648,71 @@ export function AgentDetails({ agent, projects, onClose, onSave }: AgentDetailsP
                   id="document-upload"
                   onChange={handleFileChange}
                   multiple
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  accept=".pdf,.doc,.docx,.txt"
+                  disabled={isUploadingDocuments}
                 />
-                <Label htmlFor="document-upload" className="flex flex-col items-center gap-2 cursor-pointer">
-                  <Upload className="h-8 w-8 text-muted-foreground" />
-                  <span className="text-sm font-medium">Drag & drop files or click to browse</span>
+                <Label htmlFor="document-upload" className={`flex flex-col items-center gap-2 ${isUploadingDocuments ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
+                  <Upload className={`h-8 w-8 text-muted-foreground ${isUploadingDocuments ? 'animate-pulse' : ''}`} />
+                  <span className="text-sm font-medium">
+                    {isUploadingDocuments ? 'Uploading documents...' : 'Drag & drop files or click to browse'}
+                  </span>
                   <span className="text-xs text-muted-foreground">
-                    Upload brochures, floor plans, and other project documents
+                    {isUploadingDocuments ? 'Please wait while we upload your files to the knowledge base' : 'Supports PDF, DOC, DOCX, TXT (Max 10MB each)'}
                   </span>
                 </Label>
+              </div>
+
+              {/* Text Creation Section */}
+              <div className="border rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <h3 className="text-lg font-medium">Create Text</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="text-name">Text Name</Label>
+                    <Input
+                      id="text-name"
+                      placeholder="Enter a name for your text"
+                      value={textName}
+                      onChange={(e) => setTextName(e.target.value)}
+                      disabled={isCreatingText}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="text-content">Text Content</Label>
+                    <Textarea
+                      id="text-content"
+                      placeholder="Enter your text content here"
+                      value={textContent}
+                      onChange={(e) => setTextContent(e.target.value)}
+                      rows={6}
+                      disabled={isCreatingText}
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={handleCreateText}
+                    disabled={isCreatingText || !textName.trim() || !textContent.trim()}
+                    className="w-full"
+                  >
+                    {isCreatingText ? (
+                      <>
+                        <Upload className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Text...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Create Text
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
 
               {documents.length > 0 ? (
